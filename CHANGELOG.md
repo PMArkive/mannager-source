@@ -1,3 +1,11 @@
+# 1.2.0
+## Added
+- For TF2, you can now choose between 32bit and 64bit ( just click the menu and edit the server ).
+- You can now auto-scroll in the server list ( the middle button ).
+
+## Fixed
+- Corrected the heuristics for the metamod version when downloading Sourcemod.
+
 # 1.1.1
 ## Fixed
 - Improved the scrollable in the terminal
