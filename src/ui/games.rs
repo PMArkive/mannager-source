@@ -94,7 +94,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
                     PathBuf::from("srcds_run").into()
                 },
                 x64: if cfg!(target_os = "windows") {
-                    PathBuf::from("srcds-fix_x64.exe").into()
+                    PathBuf::from("srcds-fix-x64.exe").into()
                 } else {
                     PathBuf::from("srcds_run_64").into()
                 },
