@@ -1,5 +1,5 @@
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -8,7 +8,8 @@ use crate::ui::Element;
 use crate::ui::components::notification::notification;
 use crate::ui::components::progress_stepper::stepper;
 use crate::ui::components::spinner;
-use crate::ui::games::{SOURCE_GAMES, SourceGame};
+use crate::ui::components::toggle_button_group::grouped_buttons;
+use crate::ui::games::{Architecture, ExecutablePath, SOURCE_GAMES, SourceGame};
 use crate::ui::server::ServerInfo;
 use crate::ui::themes::{Theme, tf2};
 use iced::widget::text::Wrapping;
@@ -142,6 +143,7 @@ pub enum Message {
     FinishServerCreation,
     PortUpdate(String),
     GsltUpdate(String),
+    ArchitectureChange(Architecture),
     CloseServerCreation,
 }
 
@@ -182,15 +184,30 @@ impl State {
                 self.form_page = FormSection::Downloading;
 
                 let server_path = self.server.path.clone();
-                let source_game = self.server.game.clone();
+                let server_game = self.server.game.clone();
+
+                let srcds_task = if let Some(game_info) = SOURCE_GAMES
+                    .iter()
+                    .find(|game_info| game_info.game == server_game)
+                {
+                    Task::future(download_srcds_fix(
+                        server_path.clone(),
+                        game_info.executable_path.clone(),
+                    ))
+                    .discard()
+                } else {
+                    Task::none()
+                };
 
                 Action::Run(
-                    Task::sip(
-                        download_server(server_path, source_game),
-                        Update::Downloading,
-                        Update::Finished,
-                    )
-                    .map(Message::Downloading),
+                    srcds_task.chain(
+                        Task::sip(
+                            download_server(server_path, server_game),
+                            Update::Downloading,
+                            Update::Finished,
+                        )
+                        .map(Message::Downloading),
+                    ),
                 )
             }
             Message::Downloading(progress) => match progress {
@@ -288,6 +305,12 @@ impl State {
 
                 Action::None
             }
+            Message::ArchitectureChange(arch) => {
+                self.server.arch = Some(arch);
+
+                Action::None
+            }
+
             Message::CloseServerCreation => Action::SwitchToServerList,
         }
     }
@@ -760,6 +783,12 @@ fn downloading_view<'a>(
 }
 
 fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
+    // TODO: Remove the unwrap
+    let game_info = SOURCE_GAMES
+        .iter()
+        .find(|game_info| game_info.game == server.game)
+        .unwrap();
+
     let header = {
         let title = container(column![
             text("Create server")
@@ -835,14 +864,44 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
         ]
         .spacing(5);
 
-        let max_players_input = column![
-            text("Max Players").style(tf2::text::secondary),
-            container(
-                number_input(&server.max_players, 0..=100, Message::MaxPlayersUpdate)
-                    .padding(padding::vertical(10).horizontal(13))
-            )
+        let max_players_input = row![
+            column![
+                text("Max Players").style(tf2::text::secondary),
+                container(
+                    number_input(&server.max_players, 0..=100, Message::MaxPlayersUpdate)
+                        .padding(padding::vertical(10).horizontal(13))
+                )
+            ]
+            .spacing(5),
+            space::horizontal(),
+            matches!(game_info.executable_path, ExecutablePath::Both { .. }).then(|| {
+                column![text("Architecture").style(tf2::text::secondary), {
+                    let items = vec![
+                        (
+                            container(text("32bit"))
+                                .padding(padding::vertical(5).horizontal(13))
+                                .into(),
+                            Architecture::X86,
+                        ),
+                        (
+                            container(text("64bit"))
+                                .padding(padding::vertical(5).horizontal(13))
+                                .into(),
+                            Architecture::X64,
+                        ),
+                    ];
+
+                    grouped_buttons(
+                        items,
+                        server.arch.unwrap_or_default(),
+                        Message::ArchitectureChange,
+                        tf2::button::default,
+                    )
+                }]
+                .spacing(5)
+            })
         ]
-        .spacing(5);
+        .spacing(20);
 
         let password_input = column![
             row![
@@ -954,11 +1013,53 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
     .into()
 }
 
+#[cfg(target_os = "windows")]
+pub async fn download_srcds_fix(path: PathBuf, exec_path: ExecutablePath) -> anyhow::Result<()> {
+    const SRCDS_FIX_LINK: &str =
+        "https://github.com/tsuza/srcds-pipe-passthrough-fix/releases/latest/download";
+
+    pub async fn _download_srcds_fix(
+        path: &Path,
+        url_suffix: &str,
+        filename: &str,
+    ) -> anyhow::Result<()> {
+        let contents = reqwest::get(format!("{SRCDS_FIX_LINK}/{url_suffix}"))
+            .await?
+            .bytes()
+            .await?;
+
+        tokio::fs::write(path.join(filename), contents).await?;
+
+        Ok(())
+    }
+
+    match exec_path {
+        ExecutablePath::X86(_) => {
+            _download_srcds_fix(&path, "srcds-fix-x86.exe", "srcds-fix.exe").await?;
+        }
+        ExecutablePath::X64(_) => {
+            _download_srcds_fix(&path, "srcds-fix-x64.exe", "srcds-fix-x64.exe").await?;
+        }
+        ExecutablePath::Both { .. } => {
+            _download_srcds_fix(&path, "srcds-fix-x86.exe", "srcds-fix.exe").await?;
+            _download_srcds_fix(&path, "srcds-fix-x64.exe", "srcds-fix-x64.exe").await?;
+        }
+    };
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub async fn download_srcds_fix(_path: PathBuf, _exec_path: ExecutablePath) -> anyhow::Result<()> {
+    Ok(())
+}
+
 pub fn download_server(path: PathBuf, appid: Game) -> impl Straw<(), DownloadUpdate, Error> {
     let install_path = path.to_str().unwrap_or("server").to_string();
     let appid = appid.clone();
 
     sipper(async move |mut progress| {
+        // TODO: Move this somewhere else & remove the unwraps
         #[cfg(target_os = "windows")]
         {
             const SRCDS_FIX_LINK: &str = "https://github.com/tsuza/srcds-pipe-passthrough-fix/releases/latest/download/srcds-fix-x86.exe";

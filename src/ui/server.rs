@@ -8,10 +8,13 @@ use decoder::Value;
 
 use crate::{
     core::Game,
-    ui::screen::{
-        serverboot::Console,
-        servercreation::{DepotStatus, DownloadPhase},
-        serverlist::Error,
+    ui::{
+        games::Architecture,
+        screen::{
+            serverboot::Console,
+            servercreation::{DepotStatus, DownloadPhase},
+            serverlist::Error,
+        },
     },
 };
 
@@ -149,6 +152,7 @@ pub struct ServerInfo {
     pub password: Option<String>,
     pub port: Option<u16>,
     pub gslt: Option<String>,
+    pub arch: Option<Architecture>,
 }
 
 impl ServerInfo {
@@ -167,6 +171,7 @@ impl ServerInfo {
             password: server.optional("password", string)?,
             port: server.optional("port", u16)?,
             gslt: server.optional("gslt", string)?,
+            arch: server.optional("arch", Architecture::decode)?,
         })
     }
 
@@ -183,6 +188,7 @@ impl ServerInfo {
             ("password", optional(string, self.password.clone())),
             ("port", optional(u16, self.port)),
             ("gslt", optional(string, self.gslt.clone())),
+            ("arch", optional(Architecture::encode, self.arch.as_ref())),
         ])
         .into()
     }
