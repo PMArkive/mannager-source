@@ -1,3 +1,7 @@
+# 1.2.2
+## Fixed
+- Explicitly set the client port of the server to allow multiple servers running ( or in general if the port is already being used by another process ).
+
 # 1.2.1
 ## Fixed
 - Mistakenly defaulting to 64bit for TF2
