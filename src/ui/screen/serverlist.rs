@@ -1063,9 +1063,17 @@ pub async fn setup_sourcemod(
     branch: SourcemodBranch,
     engine: SourceEngineVersion,
 ) -> Result<(), Error> {
-    MetamodDownloader::download(&path, &game, &MetamodBranch::Stable, &engine)
-        .await
-        .context(SourcemodDownloadSnafu)?;
+    MetamodDownloader::download(
+        &path,
+        &game,
+        match branch {
+            SourcemodBranch::Stable => &MetamodBranch::Stable,
+            SourcemodBranch::Dev => &MetamodBranch::Dev,
+        },
+        &engine,
+    )
+    .await
+    .context(SourcemodDownloadSnafu)?;
 
     SourcemodDownloader::download(&path, &game, &branch, &engine)
         .await

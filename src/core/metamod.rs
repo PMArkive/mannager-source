@@ -106,41 +106,45 @@ async fn get_latest_metamod_version(
 
     let a_selector = Selector::parse("a").map_err(|_| Error::UnableToFindLatestVersionError)?;
 
-    let mut stable = 0u32;
-    let mut dev = 0u32;
+    let mut stable = (0u32, 0u32);
+    let mut dev = (0u32, 0u32);
 
     for element in html.select(&a_selector).skip(5) {
         let string = element.inner_html();
 
-        let mut split = string.trim_end_matches("/").trim().split(".");
+        let mut split = string.trim_end_matches('/').trim().split('.');
 
-        let major = match split.next().and_then(|next| next.parse::<u32>().ok()) {
-            Some(1) => SourceEngineVersion::Source1,
-            Some(2) => SourceEngineVersion::Source2,
-            _ => continue,
+        let Some(Ok(major)) = split.next().map(|s| s.parse::<u32>()) else {
+            continue;
         };
 
         let Some(Ok(minor)) = split.next().map(|s| s.parse::<u32>()) else {
             continue;
         };
 
-        if &major != source_version {
-            continue;
-        }
+        let version = (major, minor);
 
-        if minor > stable {
+        if version > dev {
             stable = dev;
-        }
-
-        if minor > dev {
-            dev = minor;
+            dev = version;
+        } else if version > stable {
+            stable = version;
         }
     }
 
-    let version: u32 = source_version.clone().into();
+    let (major, minor) = match source_version {
+        SourceEngineVersion::Source2 => {
+            if stable.0 >= 2 {
+                stable
+            } else {
+                dev
+            }
+        }
+        SourceEngineVersion::Source1 => match branch {
+            MetamodBranch::Stable => stable,
+            MetamodBranch::Dev => dev,
+        },
+    };
 
-    match branch {
-        MetamodBranch::Stable => Ok(format!("{version}.{stable}")),
-        MetamodBranch::Dev => Ok(format!("{version}.{dev}")),
-    }
+    Ok(format!("{major}.{minor}"))
 }

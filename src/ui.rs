@@ -1,4 +1,4 @@
-use std::{net::Ipv4Addr, sync::Arc, time::Duration};
+use std::{fs, net::Ipv4Addr, sync::Arc, time::Duration};
 
 use iced::{
     Function, Task,
@@ -303,7 +303,7 @@ impl State {
                         let binary_path = {
                             let server_path = &info.path;
                             let executable_path =
-                                &game_info.executable_path.resolve(Architecture::X64);
+                                game_info.executable_path.resolve(Architecture::X64);
 
                             server_path.join(executable_path)
                         };
