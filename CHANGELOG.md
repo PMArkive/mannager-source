@@ -1,3 +1,7 @@
+# 1.2.1
+## Fixed
+- Mistakenly defaulting to 64bit for TF2
+
 # 1.2.0
 ## Added
 - For TF2, you can now choose between 32bit and 64bit ( just click the menu and edit the server ).
