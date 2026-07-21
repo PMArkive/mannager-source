@@ -16,9 +16,9 @@ use crate::{
     core::{Game, SourceEngineVersion, portforwarder},
     ui::{
         components::notification::notification,
-        games::SOURCE_GAMES,
+        games::{Architecture, SOURCE_GAMES},
         screen::{
-            servercreation::{DownloadUpdate, download_server},
+            servercreation::{DownloadUpdate, download_server, download_srcds_fix},
             serverlist::{create_config_file_path, get_config_path},
         },
         server::{Server, Servers},
@@ -226,14 +226,29 @@ impl State {
                         };
 
                         let server_path = info.path.clone();
-                        let source_game = info.game.clone();
+                        let server_game = info.game.clone();
 
-                        Task::sip(
-                            download_server(server_path, source_game),
-                            Update::Downloading,
-                            Update::Finished,
+                        let srcds_task = if let Some(game_info) = SOURCE_GAMES
+                            .iter()
+                            .find(|game_info| game_info.game == server_game)
+                        {
+                            Task::future(download_srcds_fix(
+                                server_path.clone(),
+                                game_info.executable_path.clone(),
+                            ))
+                            .discard()
+                        } else {
+                            Task::none()
+                        };
+
+                        srcds_task.chain(
+                            Task::sip(
+                                download_server(server_path, server_game),
+                                Update::Downloading,
+                                Update::Finished,
+                            )
+                            .map(Message::UpdateServer.with(id)),
                         )
-                        .map(Message::UpdateServer.with(id))
                     }
                     Action::EditServer(id) => {
                         let Some(server) = self.servers.get_mut(id) else {
@@ -287,7 +302,8 @@ impl State {
 
                         let binary_path = {
                             let server_path = &info.path;
-                            let executable_path = &game_info.executable_path;
+                            let executable_path =
+                                &game_info.executable_path.resolve(Architecture::X64);
 
                             server_path.join(executable_path)
                         };

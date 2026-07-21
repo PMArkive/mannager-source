@@ -32,7 +32,7 @@ use crate::{
             spinner::{self, Circular, easing},
             toggle_button_group::grouped_buttons,
         },
-        games::SOURCE_GAMES,
+        games::{Architecture, ExecutablePath, SOURCE_GAMES},
         screen::servercreation::DownloadPhase,
         server::{HostingMode, Server, Servers},
         themes::{Theme, tf2},
@@ -99,6 +99,7 @@ pub enum ServerMessage {
     CopyLink,
     CopyLinkFinished(Option<String>),
     HostingModeChange(HostingMode),
+    ArchitectureChange(Architecture),
     DummyButtonEffectMsg,
 }
 
@@ -338,6 +339,15 @@ impl ServerList {
                 }
 
                 *hosting_mode = mode;
+
+                Action::None
+            }
+            Message::ServerMessage(id, ServerMessage::ArchitectureChange(arch)) => {
+                let Some(Server { info, .. }) = servers.get_mut(id) else {
+                    return Action::None;
+                };
+
+                info.arch = Some(arch);
 
                 Action::None
             }
@@ -857,6 +867,11 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
             .opacity(1.0)
     };
 
+    let game_info = SOURCE_GAMES
+        .iter()
+        .find(|game_info| game_info.game == info.game)
+        .unwrap();
+
     let header_row = {
         let server_name = text_input("Name", &info.name)
             .on_input(|string| ServerMessage::EditServer(EditServer::ChangeName(string)))
@@ -868,7 +883,33 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                 ..Font::DEFAULT
             });
 
-        server_name
+        row![
+            server_name,
+            matches!(game_info.executable_path, ExecutablePath::Both { .. }).then(|| {
+                let items = vec![
+                    (
+                        container(text("32bit"))
+                            .padding(padding::vertical(1))
+                            .into(),
+                        Architecture::X86,
+                    ),
+                    (
+                        container(text("64bit"))
+                            .padding(padding::vertical(1))
+                            .into(),
+                        Architecture::X64,
+                    ),
+                ];
+                grouped_buttons(
+                    items,
+                    info.arch.unwrap_or_default(),
+                    ServerMessage::ArchitectureChange,
+                    tf2::button::default,
+                )
+            })
+        ]
+        .align_y(Alignment::Center)
+        .spacing(20)
     };
 
     let info = {
@@ -951,7 +992,7 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                         .align_y(Alignment::Center)
                     )
                     .padding(padding::horizontal(10).vertical(6))
-                    .style(tf2::container::info_container)
+                    .style(tf2::container::info_container),
                 ]
                 .spacing(12)
             )
