@@ -323,11 +323,12 @@ impl State {
 
                             args.push_str(&format!(
                                 " +hostname \"{name}\" +map {map} +maxplayers {max} \
-                                  -nohltv +ip 0.0.0.0 -strictportbind -port {port}",
+                                  -nohltv +ip 0.0.0.0 -strictportbind -port {port} +clientport {clientport}",
                                 name = info.name,
                                 map = info.map,
                                 max = info.max_players,
                                 port = port,
+                                clientport = port + 5,
                             ));
 
                             if info.max_players > 32 && info.game == Game::TeamFortress2 {
