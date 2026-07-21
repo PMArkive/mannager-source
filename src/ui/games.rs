@@ -21,8 +21,8 @@ pub enum ExecutablePath {
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Architecture {
-    X86,
     #[default]
+    X86,
     X64,
 }
 

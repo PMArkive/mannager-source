@@ -302,8 +302,9 @@ impl State {
 
                         let binary_path = {
                             let server_path = &info.path;
-                            let executable_path =
-                                game_info.executable_path.resolve(Architecture::X64);
+                            let executable_path = game_info
+                                .executable_path
+                                .resolve(info.arch.unwrap_or_default());
 
                             server_path.join(executable_path)
                         };
