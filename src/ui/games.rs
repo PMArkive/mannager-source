@@ -106,7 +106,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
             engine: SourceEngineVersion::Source1,
             can_sdr: true,
             executable_path: if cfg!(target_os = "windows") {
-                ExecutablePath::X64(PathBuf::from("srcds-fix.exe"))
+                ExecutablePath::X64(PathBuf::from("srcds-fix-x64.exe"))
             } else {
                 ExecutablePath::X64(PathBuf::from("srcds_run"))
             },
@@ -150,7 +150,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
             engine: SourceEngineVersion::Source1,
             can_sdr: false,
             executable_path: if cfg!(target_os = "windows") {
-                ExecutablePath::X64(PathBuf::from("srcds-fix.exe"))
+                ExecutablePath::X64(PathBuf::from("srcds-fix-x64.exe"))
             } else {
                 ExecutablePath::X64(PathBuf::from("srcds_run"))
             },
@@ -161,7 +161,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
             engine: SourceEngineVersion::Source1,
             can_sdr: true,
             executable_path: if cfg!(target_os = "windows") {
-                ExecutablePath::X64(PathBuf::from("srcds-fix.exe"))
+                ExecutablePath::X64(PathBuf::from("srcds-fix-x64.exe"))
             } else {
                 ExecutablePath::X64(PathBuf::from("srcds_run"))
             },
@@ -198,7 +198,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
             engine: SourceEngineVersion::Source1,
             can_sdr: true,
             executable_path: if cfg!(target_os = "windows") {
-                ExecutablePath::X64(PathBuf::from("srcds-fix.exe"))
+                ExecutablePath::X64(PathBuf::from("srcds-fix-x64.exe"))
             } else {
                 ExecutablePath::X64(PathBuf::from("srcds_run"))
             },
