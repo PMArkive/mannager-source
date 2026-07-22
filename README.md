@@ -45,6 +45,7 @@
 - Deadlock
 - No More Room In Hell
 - Day of Defeat: Source
+- Garry's Mod
 
 Additional games can be requred through Github issues.
 
