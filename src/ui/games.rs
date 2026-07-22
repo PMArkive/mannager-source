@@ -203,5 +203,16 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
                 ExecutablePath::X64(PathBuf::from("srcds_run"))
             },
         },
+        SourceGame {
+            game: Game::Gmod,
+            image: svg::Handle::from_memory(include_bytes!("../../images/gmod-logo.svg")),
+            engine: SourceEngineVersion::Source1,
+            can_sdr: false,
+            executable_path: if cfg!(target_os = "windows") {
+                ExecutablePath::X64(PathBuf::from("srcds-fix-x64.exe"))
+            } else {
+                ExecutablePath::X64(PathBuf::from("srcds_run"))
+            },
+        },
     ]
 });

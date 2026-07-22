@@ -37,6 +37,7 @@ pub enum Game {
     HalfLife2DM,
     NoMoreRoomInHell,
     DayOfDefeatSource,
+    Gmod,
     CounterStrike2,
     Deadlock,
 }
@@ -55,6 +56,7 @@ impl Game {
             Game::NoMoreRoomInHell => "nmrih",
             Game::Deadlock => "deadlock",
             Game::DayOfDefeatSource => "dod",
+            Game::Gmod => "garrysmod",
         }
     }
 
@@ -89,6 +91,7 @@ impl std::str::FromStr for Game {
             "Counter-Strike: 2" => Ok(Game::CounterStrike2),
             "Deadlock" => Ok(Game::Deadlock),
             "Day of Defeat: Source" => Ok(Game::DayOfDefeatSource),
+            "Garry's Mod" => Ok(Game::Gmod),
             _ => Err(format!("'{s}' is not a valid game")),
         }
     }
@@ -108,6 +111,7 @@ impl std::fmt::Display for Game {
             Game::CounterStrike2 => write!(f, "Counter-Strike: 2"),
             Game::Deadlock => write!(f, "Deadlock"),
             Game::DayOfDefeatSource => write!(f, "Day of Defeat: Source"),
+            Game::Gmod => write!(f, "Garry's Mod"),
         }
     }
 }
@@ -126,6 +130,7 @@ impl From<Game> for u32 {
             Game::NoMoreRoomInHell => 317670,
             Game::Deadlock => 1422450,
             Game::DayOfDefeatSource => 232290,
+            Game::Gmod => 4020,
         }
     }
 }
