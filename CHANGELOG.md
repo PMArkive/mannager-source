@@ -1,3 +1,10 @@
+# 1.3.0
+## Added
+- Added Garry's Mod as a supported game.
+
+## Fixed
+- Correctly handle hostnames with spaces on Windows
+
 # 1.2.2
 ## Fixed
 - Explicitly set the client port of the server to allow multiple servers running ( or in general if the port is already being used by another process ).
