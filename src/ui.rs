@@ -313,34 +313,56 @@ impl State {
                             .port
                             .unwrap_or_else(|| find_available_port(Ipv4Addr::UNSPECIFIED));
 
-                        let args = {
-                            let mut args = match game_info.engine {
+                        let args: Vec<String> = {
+                            let mut args: Vec<String> = match game_info.engine {
                                 SourceEngineVersion::Source1 => {
-                                    format!("-console -game {}", &info.game.arg_name())
+                                    vec![
+                                        "-console".into(),
+                                        "-game".into(),
+                                        info.game.arg_name().to_string(),
+                                    ]
                                 }
-                                SourceEngineVersion::Source2 => "-dedicated".to_string(),
+                                SourceEngineVersion::Source2 => vec!["-dedicated".into()],
                             };
 
-                            args.push_str(&format!(
-                                " +hostname \"{name}\" +map {map} +maxplayers {max} \
-                                  -nohltv +ip 0.0.0.0 -strictportbind -port {port} +clientport {clientport}",
-                                name = info.name,
-                                map = info.map,
-                                max = info.max_players,
-                                port = port,
-                                clientport = port + 5,
-                            ));
+                            args.push("+hostname".into());
+
+                            #[cfg(target_os = "linux")]
+                            args.push(if info.name.contains(' ') {
+                                format!("\"{}\"", info.name.replace('"', "\\\""))
+                            } else {
+                                info.name.clone()
+                            });
+
+                            #[cfg(not(target_os = "linux"))]
+                            args.push(info.name.clone());
+
+                            args.extend([
+                                "+map".into(),
+                                info.map.clone(),
+                                "+maxplayers".into(),
+                                info.max_players.to_string(),
+                                "-nohltv".into(),
+                                "+ip".into(),
+                                "0.0.0.0".into(),
+                                "-strictportbind".into(),
+                                "-port".into(),
+                                port.to_string(),
+                                "+clientport".into(),
+                                (port + 5).to_string()
+                            ]);
 
                             if info.max_players > 32 && info.game == Game::TeamFortress2 {
-                                args.push_str(" -unrestricted_maxplayers");
+                                args.push("-unrestricted_maxplayers".into());
                             }
 
                             if let Some(token) = &info.gslt {
-                                args.push_str(&format!(" +sv_setsteamaccount {token}"));
+                                args.push("+sv_setsteamaccount".into());
+                                args.push(token.clone());
                             }
 
                             if matches!(hosting_mode, server::HostingMode::Sdr) {
-                                args.push_str(" -enablefakeip")
+                                args.push("-enablefakeip".into());
                             }
 
                             args

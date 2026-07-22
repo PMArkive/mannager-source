@@ -68,7 +68,7 @@ impl Console {
 
     pub fn start(
         executable_path: PathBuf,
-        args: String,
+        args: Vec<String>,
     ) -> impl Stream<Item = Result<ServerCommunicationTwoWay, Error>> {
         try_channel(
             1,
@@ -99,7 +99,7 @@ impl Console {
                     {
                         pty_process::Command::new(&executable_path)
                             .current_dir(parent)
-                            .args(args.split_whitespace())
+                            .args(args)
                             .spawn(&pty.pts().map_err(|err| Error::SpawnProcessError {
                                 msg: err.to_string(),
                             })?)
@@ -116,7 +116,7 @@ impl Console {
 
                         tokio::process::Command::new(&executable_path)
                             .current_dir(parent)
-                            .args(args.split_whitespace())
+                            .args(args)
                             .stdin(Stdio::piped())
                             .stdout(Stdio::piped())
                             .kill_on_drop(true)
