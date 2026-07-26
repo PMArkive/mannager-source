@@ -181,6 +181,7 @@ pub static SOURCE_GAMES: LazyLock<Vec<SourceGame>> = LazyLock::new(|| {
                 ExecutablePath::X64(["game", "cs2.sh"].iter().collect::<PathBuf>())
             },
         },
+        #[cfg(target_os = "windows")]
         SourceGame {
             game: Game::Deadlock,
             image: svg::Handle::from_memory(include_bytes!("../../images/deadlock-logo.svg")),
