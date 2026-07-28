@@ -1,3 +1,10 @@
+# 1.4.0
+## Added
+- You can now set custom launch parameters.
+
+## Fixed
+- Setting a password gets correctly applied now
+
 # 1.3.0
 ## Added
 - Added Garry's Mod as a supported game.
