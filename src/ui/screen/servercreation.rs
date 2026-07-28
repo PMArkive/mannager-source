@@ -144,6 +144,7 @@ pub enum Message {
     PortUpdate(String),
     GsltUpdate(String),
     ArchitectureChange(Architecture),
+    CustomLaunchParamsUpdate(String),
     CloseServerCreation,
 }
 
@@ -310,6 +311,11 @@ impl State {
 
                 Action::None
             }
+            Message::CustomLaunchParamsUpdate(params) => {
+                self.server.custom_launch_params = (!params.is_empty()).then_some(params);
+
+                Action::None
+            }
 
             Message::CloseServerCreation => Action::SwitchToServerList,
         }
@@ -357,7 +363,7 @@ fn choose_game_view<'a>(server: &ServerInfo) -> Element<'a, Message> {
                         .content_fit(ContentFit::Contain)
                         .height(80)
                         .width(80)
-                        .opacity(0.5),
+                        .opacity(0.5 as f32),
                 )
                 .on_press(button_event)
                 .padding(padding::vertical(14).horizontal(12))
@@ -960,6 +966,23 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
         ]
         .spacing(5);
 
+        let custom_launch_params = column![
+            row![
+                text("Custom Launch Parameters").style(tf2::text::secondary),
+                optional_tag()
+            ]
+            .spacing(5)
+            .align_y(Alignment::Center),
+            text_input(
+                "...",
+                &server.custom_launch_params.as_deref().unwrap_or_default()
+            )
+            .on_input(Message::CustomLaunchParamsUpdate)
+            .width(Length::Fill)
+            .padding(padding::vertical(10).horizontal(13))
+        ]
+        .spacing(5);
+
         container(
             column![
                 description_input,
@@ -969,7 +992,8 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
                 row![password_input, port_input]
                     .width(Length::Fill)
                     .spacing(20),
-                gslt_input
+                gslt_input,
+                custom_launch_params
             ]
             .spacing(30),
         )

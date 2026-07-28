@@ -370,6 +370,10 @@ impl State {
                                 args.push(password.clone());
                             }
 
+                            if let Some(custom_launch_params) = &info.custom_launch_params {
+                                args.push(custom_launch_params.clone());
+                            }
+
                             args
                         };
 
