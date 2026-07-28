@@ -112,6 +112,7 @@ pub enum EditServer {
     ChangePort(String),
     ChangeMaxPlayers(u32),
     ChangeGslt(String),
+    ChangeCustomLaunchParams(String),
 }
 
 impl ServerList {
@@ -316,6 +317,11 @@ impl ServerList {
                     }
                     EditServer::ChangeGslt(token) => {
                         info.gslt = (!token.is_empty()).then_some(token);
+
+                        Action::None
+                    }
+                    EditServer::ChangeCustomLaunchParams(params) => {
+                        info.custom_launch_params = (!params.is_empty()).then_some(params);
 
                         Action::None
                     }
@@ -558,7 +564,6 @@ fn card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
             .content_fit(ContentFit::Contain)
             .width(80)
             .height(80)
-            .opacity(1.0)
     };
 
     let header_row = {
@@ -864,7 +869,6 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
             .content_fit(ContentFit::Contain)
             .width(80)
             .height(80)
-            .opacity(1.0)
     };
 
     let game_info = SOURCE_GAMES
@@ -987,6 +991,23 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                                 ))
                                 .secure(true)
                                 .size(15)
+                        ]
+                        .spacing(5)
+                        .align_y(Alignment::Center)
+                    )
+                    .padding(padding::horizontal(10).vertical(6))
+                    .style(tf2::container::info_container),
+                    container(
+                        row![
+                            text("Custom Launch Parameters").size(15),
+                            text_input(
+                                "...",
+                                info.custom_launch_params.as_deref().unwrap_or_default()
+                            )
+                            .on_input(|params| ServerMessage::EditServer(
+                                EditServer::ChangeCustomLaunchParams(params)
+                            ))
+                            .size(15)
                         ]
                         .spacing(5)
                         .align_y(Alignment::Center)

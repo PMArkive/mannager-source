@@ -153,6 +153,7 @@ pub struct ServerInfo {
     pub port: Option<u16>,
     pub gslt: Option<String>,
     pub arch: Option<Architecture>,
+    pub custom_launch_params: Option<String>,
 }
 
 impl ServerInfo {
@@ -172,6 +173,7 @@ impl ServerInfo {
             port: server.optional("port", u16)?,
             gslt: server.optional("gslt", string)?,
             arch: server.optional("arch", Architecture::decode)?,
+            custom_launch_params: server.optional("custom_launch_params", string)?,
         })
     }
 
@@ -189,6 +191,10 @@ impl ServerInfo {
             ("port", optional(u16, self.port)),
             ("gslt", optional(string, self.gslt.clone())),
             ("arch", optional(Architecture::encode, self.arch.as_ref())),
+            (
+                "custom_launch_params",
+                optional(string, self.custom_launch_params.clone()),
+            ),
         ])
         .into()
     }
