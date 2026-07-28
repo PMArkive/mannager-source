@@ -1039,6 +1039,8 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
 
 #[cfg(target_os = "windows")]
 pub async fn download_srcds_fix(path: PathBuf, exec_path: ExecutablePath) -> anyhow::Result<()> {
+    use std::path::PathBuf;
+
     const SRCDS_FIX_LINK: &str =
         "https://github.com/tsuza/srcds-pipe-passthrough-fix/releases/latest/download";
 
