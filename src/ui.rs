@@ -1,4 +1,4 @@
-use std::{fs, net::Ipv4Addr, sync::Arc, time::Duration};
+use std::{net::Ipv4Addr, sync::Arc, time::Duration};
 
 use iced::{
     Function, Task,
@@ -16,7 +16,7 @@ use crate::{
     core::{Game, SourceEngineVersion, portforwarder},
     ui::{
         components::notification::notification,
-        games::{Architecture, SOURCE_GAMES},
+        games::SOURCE_GAMES,
         screen::{
             servercreation::{DownloadUpdate, download_server, download_srcds_fix},
             serverlist::{create_config_file_path, get_config_path},
@@ -349,7 +349,7 @@ impl State {
                                 "-port".into(),
                                 port.to_string(),
                                 "+clientport".into(),
-                                (port + 5).to_string()
+                                (port + 5).to_string(),
                             ]);
 
                             if info.max_players > 32 && info.game == Game::TeamFortress2 {
@@ -363,6 +363,11 @@ impl State {
 
                             if matches!(hosting_mode, server::HostingMode::Sdr) {
                                 args.push("-enablefakeip".into());
+                            }
+
+                            if let Some(password) = &info.password {
+                                args.push("+sv_password".into());
+                                args.push(password.clone());
                             }
 
                             args
