@@ -339,7 +339,7 @@ impl State {
     }
 }
 
-fn choose_game_view<'a>(server: &ServerInfo) -> Element<'a, Message> {
+fn choose_game_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
     fn game_entry<'a>(
         game: &SourceGame,
         is_currently_selected: bool,
@@ -840,7 +840,7 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
             .spacing(5),
             text_input(
                 "e.g. Testing Server",
-                &server.description.as_deref().unwrap_or_default()
+                server.description.as_deref().unwrap_or_default()
             )
             .on_input(Message::MessageDescriptionUpdate)
             .width(Length::Fill)
@@ -848,38 +848,16 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
         ]
         .spacing(5);
 
-        let map_input = column![
-            text("Map").style(tf2::text::secondary),
-            row![
-                container(
-                    button(
-                        row![icon::map(), "Select Map"]
-                            .align_y(Alignment::Center)
-                            .spacing(7)
-                    )
-                    .on_press(Message::SelectMap)
-                    .padding(padding::vertical(12).horizontal(14)),
-                ),
-                container(text(server.map.as_str()))
-                    .width(Length::Fill)
-                    .padding(padding::vertical(10).horizontal(13))
-                    .style(tf2::container::main)
-            ]
-            .spacing(10)
-            .align_y(Alignment::Center)
-        ]
-        .spacing(5);
-
         let max_players_input = row![
             column![
                 text("Max Players").style(tf2::text::secondary),
-                container(
-                    number_input(&server.max_players, 0..=100, Message::MaxPlayersUpdate)
-                        .padding(padding::vertical(10).horizontal(13))
-                )
+                number_input("", &server.max_players)
+                    .bounds(0..=100)
+                    .on_input(Message::MaxPlayersUpdate)
+                    .padding(padding::vertical(10).horizontal(13))
             ]
+            .width(Length::Fill)
             .spacing(5),
-            space::horizontal(),
             matches!(game_info.executable_path, ExecutablePath::Both { .. }).then(|| {
                 column![text("Architecture").style(tf2::text::secondary), {
                     let items = vec![
@@ -909,6 +887,28 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
         ]
         .spacing(20);
 
+        let map_input = column![
+            text("Map").style(tf2::text::secondary),
+            row![
+                container(
+                    button(
+                        row![icon::map(), "Select Map"]
+                            .align_y(Alignment::Center)
+                            .spacing(7)
+                    )
+                    .on_press(Message::SelectMap)
+                    .padding(padding::vertical(12).horizontal(14)),
+                ),
+                container(text(server.map.as_str()))
+                    .width(Length::Fill)
+                    .padding(padding::vertical(10).horizontal(13))
+                    .style(tf2::container::main)
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center)
+        ]
+        .spacing(5);
+
         let password_input = column![
             row![
                 text("Server Password").style(tf2::text::secondary),
@@ -918,7 +918,7 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
             .spacing(5),
             text_input(
                 "e.g. password123",
-                &server.password.as_deref().unwrap_or_default()
+                server.password.as_deref().unwrap_or_default()
             )
             .on_input(Message::PasswordUpdate)
             .secure(true)
@@ -945,7 +945,7 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
             .align_y(Alignment::Center),
             text_input(
                 "27015",
-                &server.port.map(|port| port.to_string()).unwrap_or_default()
+                server.port.map(|port| port.to_string()).unwrap_or_default()
             )
             .on_input(Message::PortUpdate)
             .width(150)
@@ -958,7 +958,7 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
             row![text("GSLT").style(tf2::text::secondary), optional_tag()]
                 .spacing(5)
                 .align_y(Alignment::Center),
-            text_input("GSLT", &server.gslt.as_deref().unwrap_or_default())
+            text_input("GSLT", server.gslt.as_deref().unwrap_or_default())
                 .on_input(Message::GsltUpdate)
                 .secure(true)
                 .width(Length::Fill)
@@ -975,7 +975,7 @@ fn info_view<'a>(server: &'a ServerInfo) -> Element<'a, Message> {
             .align_y(Alignment::Center),
             text_input(
                 "...",
-                &server.custom_launch_params.as_deref().unwrap_or_default()
+                server.custom_launch_params.as_deref().unwrap_or_default()
             )
             .on_input(Message::CustomLaunchParamsUpdate)
             .width(Length::Fill)
@@ -1085,24 +1085,6 @@ pub fn download_server(path: PathBuf, appid: Game) -> impl Straw<(), DownloadUpd
     let appid = appid.clone();
 
     sipper(async move |mut progress| {
-        // TODO: Move this somewhere else & remove the unwraps
-        #[cfg(target_os = "windows")]
-        {
-            const SRCDS_FIX_LINK: &str = "https://github.com/tsuza/srcds-pipe-passthrough-fix/releases/latest/download/srcds-fix-x86.exe";
-
-            let srcds_fix_contents = reqwest::get(SRCDS_FIX_LINK)
-                .await
-                .unwrap()
-                .bytes()
-                .await
-                .unwrap();
-
-            let _ = std::fs::write(
-                format!("{}/srcds-fix.exe", install_path),
-                srcds_fix_contents,
-            );
-        }
-
         // TODO: Port SteamKit to Rust and use that instead
         let mut depot_downloader = DepotDownloader::new("./depotdownloader")
             .await

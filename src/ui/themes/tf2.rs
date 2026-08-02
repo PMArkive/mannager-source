@@ -17,7 +17,6 @@ pub mod number_input;
 pub mod progress_bar;
 pub mod rule;
 pub mod scrollable;
-pub mod selectable_text;
 pub mod svg;
 pub mod sweeten_column;
 pub mod table;

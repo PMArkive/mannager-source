@@ -31,7 +31,6 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     let active = Style {
         background: surface.container.lowest.into(),
         border: active_border,
-        icon: surface.text_variant,
         placeholder: surface.text_variant,
         value: primary.text,
         selection: primary.color.scale_alpha(0.35),
@@ -52,7 +51,6 @@ pub fn default(theme: &Theme, status: Status) -> Style {
                 width: 1.5,
                 radius: 10.into(),
             },
-            icon: disabled_text(surface.text),
             placeholder: disabled_text(surface.text),
             value: disabled_text(surface.text),
             selection: disabled_text(surface.text),
@@ -74,7 +72,6 @@ pub fn terminal(theme: &Theme, status: Status) -> Style {
     let active = Style {
         background: surface.container.base.into(),
         border: active_border,
-        icon: surface.text_variant,
         placeholder: surface.text_variant,
         value: surface.text,
         selection: primary.color.scale_alpha(0.35),
@@ -90,7 +87,6 @@ pub fn terminal(theme: &Theme, status: Status) -> Style {
                 width: 1.5,
                 radius: 10.into(),
             },
-            icon: disabled_text(surface.text),
             placeholder: disabled_text(surface.text),
             value: disabled_text(surface.text),
             selection: disabled_text(surface.text),

@@ -12,7 +12,10 @@ use iced::{
     keyboard, padding,
     stream::try_channel,
     task,
-    widget::{button, column, container, row, scrollable::Viewport, space, text},
+    widget::{
+        SelectableGroup, button, column, container, row, scrollable::Viewport, selectable_group,
+        space, text,
+    },
 };
 
 use iced::widget::scrollable;
@@ -30,7 +33,10 @@ use crate::{
     ui::{
         Element,
         components::textinput_terminal,
-        themes::tf2::{self},
+        themes::{
+            Theme,
+            tf2::{self},
+        },
     },
 };
 
@@ -320,7 +326,7 @@ impl ServerTerminal {
         }
     }
 
-    pub fn view<'a>(title: &String, console: &Console) -> Element<'a, Message> {
+    pub fn view<'a>(title: &String, console: &'a Console) -> Element<'a, Message> {
         let header = container(
             row![
                 button(icon::left_arrow().size(20).center()).on_press(Message::GoBack),
@@ -349,21 +355,25 @@ impl ServerTerminal {
         });
 
         let console_output = {
-            let console_output_text = column(console.output.iter().map(|text| {
-                match text {
-                    TextType::Input(string) => iced_selection::text(format!("{}", string))
-                        .font(Font::new("Roboto Mono"))
-                        .style(|_theme| iced_selection::text::Style {
-                            color: Some(Color::from_rgb8(120, 120, 120)),
-                            ..Default::default()
-                        })
-                        .into(),
-                    TextType::Output(string) => iced_selection::text(format!("{}", string))
-                        .font(Font::new("Roboto Mono"))
-                        .into(),
-                }
-            }))
-            .padding(5);
+            let console_output_text: SelectableGroup<'_, iced::Never, _, Theme> = selectable_group(
+                column(console.output.iter().map(|line| {
+                    match line {
+                        TextType::Input(string) => text(string.as_str())
+                            .selectable(true)
+                            .font(Font::new("Roboto Mono"))
+                            .style(|_theme| text::Style {
+                                color: Some(Color::from_rgb8(120, 120, 120)),
+                                ..Default::default()
+                            })
+                            .into(),
+                        TextType::Output(string) => text(string.as_str())
+                            .selectable(true)
+                            .font(Font::new("Roboto Mono"))
+                            .into(),
+                    }
+                }))
+                .padding(5),
+            );
 
             container(
                 scrollable(console_output_text)
