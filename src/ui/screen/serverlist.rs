@@ -513,7 +513,7 @@ fn card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                 .into(),
             )
             .offset(8.0)
-            .max_width(200.0),
+            .width(Length::Fit.max(200.0)),
         );
 
         MenuBar::new(
@@ -545,7 +545,7 @@ fn card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                     ]
                     .into(),
                 )
-                .max_width(250.0)
+                .width(Length::Fit.max(250.0))
                 .offset(5.0),
             )]
             .into(),
@@ -718,7 +718,8 @@ fn card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                                     container("").width(100).style(|_theme| {
                                         container::background(Color::BLACK.scale_alpha(0.2))
                                     }),
-                                    iced_selection::text(password_str)
+                                    text(password_str)
+                                        .selectable(true)
                                         .ellipsis(Ellipsis::Middle)
                                         .wrapping(Wrapping::None)
                                         .size(15)
@@ -924,10 +925,12 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                         container(
                             row![
                                 icon::users().size(15),
-                                number_input(&info.max_players, 0..100, |num| {
-                                    ServerMessage::EditServer(EditServer::ChangeMaxPlayers(num))
-                                })
-                                .set_size(15)
+                                number_input("", &info.max_players)
+                                    .bounds(0..100)
+                                    .on_input(|num| {
+                                        ServerMessage::EditServer(EditServer::ChangeMaxPlayers(num))
+                                    })
+                                    .size(15)
                             ]
                             .align_y(Alignment::Center)
                             .spacing(5)
@@ -939,7 +942,7 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                                 icon::port().size(15),
                                 text_input(
                                     "Port",
-                                    &info.port.map_or_else(String::new, |port| port.to_string())
+                                    info.port.map_or_else(String::new, |port| port.to_string())
                                 )
                                 .on_input(|port| {
                                     ServerMessage::EditServer(EditServer::ChangePort(port))

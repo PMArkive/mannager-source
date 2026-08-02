@@ -26,7 +26,7 @@ pub fn default(theme: &Theme, status: Status) -> Style {
     let surface = theme.colors().surface;
 
     let active = Style {
-        button_background: Some(surface.container.lowest.into()),
+        button_background: Some(surface.container.highest.into()),
         icon_color: primary.text,
     };
 

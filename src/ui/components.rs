@@ -9,7 +9,6 @@ pub mod progress_stepper;
 pub mod spinner;
 pub mod textinput_terminal;
 pub mod toggle_button_group;
-pub mod typed_input;
 
 pub fn metered_progress_bar<'a, Theme>(
     range: RangeInclusive<f32>,
