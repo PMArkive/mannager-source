@@ -2103,7 +2103,7 @@ dependencies = [
 [[package]]
 name = "iced_aw"
 version = "0.14.1"
-source = "git+https://github.com/tsuza/iced_aw.git?branch=deps%28iced%29%2Ftext-input-change#963d53462adbcfd164fc87c9ba3c9dafd898e15f"
+source = "git+https://github.com/tsuza/iced_aw.git?branch=deps%28iced%29%2Ftext-input-change#3f2de69b1bf2c230b26a0f0fd32b3a3b9ff522bc"
 dependencies = [
  "iced_core 0.15.0-dev",
  "iced_fonts",

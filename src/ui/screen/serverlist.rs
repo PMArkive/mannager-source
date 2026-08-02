@@ -925,11 +925,12 @@ fn editable_card<'a>(server: &'a Server) -> Element<'a, ServerMessage> {
                         container(
                             row![
                                 icon::users().size(15),
-                                number_input("", &info.max_players).bounds(0..100).on_input(
-                                    |num| {
+                                number_input("", &info.max_players)
+                                    .bounds(0..100)
+                                    .on_input(|num| {
                                         ServerMessage::EditServer(EditServer::ChangeMaxPlayers(num))
-                                    }
-                                )
+                                    })
+                                    .size(15)
                             ]
                             .align_y(Alignment::Center)
                             .spacing(5)
