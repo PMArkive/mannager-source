@@ -1,3 +1,7 @@
+# 1.5.0
+## Added
+- You can now properly select text in the server terminal.
+
 # 1.4.0
 ## Added
 - You can now set custom launch parameters.
